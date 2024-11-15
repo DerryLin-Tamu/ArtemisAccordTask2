@@ -33,6 +33,7 @@ planet: st.Entity = st.GetThisSystem().GetParam(st.VarType.entityRef, "Planet")
 charging_station: st.Entity = st.GetSimEntity().GetParam(st.VarType.entityRef, "ChargingStation")
 power_assembly: st.Entity = st.GetSimEntity().GetParam(st.VarType.entityRef, "PowerAssembly")
 
+
 #######################
 ##  Simulation Loop  ##
 #######################
@@ -41,6 +42,7 @@ CHARGING_RADIUS_M = 10.0
 
 exit_flag = False
 while not exit_flag:
+    
     LoopFreqHz = st.GetThisSystem().GetParam(st.VarType.double, "LoopFreqHz")
     time.sleep(1.0 / LoopFreqHz)
 

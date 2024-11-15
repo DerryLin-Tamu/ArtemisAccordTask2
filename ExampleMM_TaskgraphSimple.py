@@ -29,6 +29,10 @@ entities = st.GetThisSystem().GetParamArray(st.VarType.entityRef, "Entities")
 LTV1: st.Entity = entities[0]
 LTV2: st.Entity = entities[1]
 
+# ADDED IN v1.2.1; NECESSARY FOR REACTION-NOT-SET WARNINGS
+for en in entities:
+    mm.SetupAllCommands(en)
+
 LTV1_task_graph = TG.TaskGraph()
 LTV2_task_graph = TG.TaskGraph()
 

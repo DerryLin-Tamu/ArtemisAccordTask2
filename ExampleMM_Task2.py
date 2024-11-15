@@ -32,6 +32,10 @@ LTV2: st.Entity = entities[1]
 Scout1: st.Entity = entities[2]
 Scout2: st.Entity = entities[3]
 
+# ADDED IN v1.2.1; NECESSARY FOR REACTION-NOT-SET WARNINGS
+for en in entities:
+    mm.SetupAllCommands(en)
+
 LTV1_task_graph = TG.TaskGraph()
 LTV2_task_graph = TG.TaskGraph()
 Scout1_task_graph = TG.TaskGraph()

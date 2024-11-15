@@ -12,7 +12,7 @@ import numpy as np
 # DON'T CHANGE ANY OF THE ABOVE; NECESSARY FOR JOINING SIMULATION
 #################################################################
 
-from API.STU_Common import Command, _commandID_Str
+from API.STU_Common import Command, _commandID_Str, CoordToXY
 import API.EntityBehaviorFuncs as EB
 import API.EntityTelemetry as ET
 import API.SurfaceMovement as SM
@@ -32,7 +32,7 @@ def MoveToCoord_Received(command: Command):
     loc = payload.GetParam(st.VarType.doubleV3, "Loc")
     coord = st.PlanetUtils.Coord(loc, np.identity(3), mover.radius)
     mover.TurnAndMoveToCoord(coord)
-    st.OnScreenLogMessage("Received MoveToCoord command; moving to specified coord.", 
+    st.OnScreenLogMessage(f"{en.getName()} Behavior: Received MoveToCoord command; moving to XY {CoordToXY(coord)}.", 
                           "LTV Behavior", st.Severity.Info)
 
 
@@ -42,21 +42,21 @@ en_behavior.OnCommandReceived("MoveToCoord", MoveToCoord_Received)
 def On_MoveComplete(payload : st.ParamMap):
     command_type = "MoveToCoord"
     command_id = _commandID_Str(en, command_type)
-    # st.OnScreenLogMessage("Evaluating completion for command id: " + command_id, 
-    #                       "LTV Behavior", st.Severity.Info)
+    # st.OnScreenLogMessage("DEBUG: Evaluating completion for command id: " + command_id, 
+    #                       "LTV Behavior", st.Severity.Warning)
     
     if (command_type in en_behavior.ActiveCommands()):
         if en.HasParam("HasComms"):
             if en.GetParam(st.VarType.bool, "HasComms"):
                 en_behavior.CompleteCommand(command_type, payload)
             else:
-                st.OnScreenLogMessage("MoveToCoord failed because of comms loss.", 
+                st.OnScreenLogMessage(f"{en.getName()} Behavior: MoveToCoord failed because of comms loss.", 
                                       "LTV Behavior", st.Severity.Info)
                 en_behavior.FailCommand(command_type, payload)
         else:
             en_behavior.CompleteCommand(command_type, payload)
     else:
-        st.OnScreenLogMessage("MoveToCoord failed because of missing command in active commands.", 
+        st.OnScreenLogMessage(f"{en.getName()} Behavior: MoveToCoord failed because of missing command in active commands.", 
                               "LTV Behavior", st.Severity.Error)
         st.logger_warn("Can't complete MoveToCoord because it has already been deleted from active commands.")
         # en_behavior.FailCommand(command_type, payload)
@@ -68,7 +68,7 @@ def RotateToAzimuth_Received(command: Command):
     payload: st.ParamMap = command.payload
     az = payload.GetParam(st.VarType.double, "Azimuth")
     mover.TurnToAzimuth(az)
-    st.OnScreenLogMessage("Received TurnToAzimuth command; rotating to a specified azimuth.", 
+    st.OnScreenLogMessage(f"{en.getName()} Behavior: Received TurnToAzimuth command; rotating to azimuth = {az} degrees.", 
                         "LTV Behavior", st.Severity.Info)
     en_behavior.CompleteCommand("RotateToAzimuth", st.ParamMap())
 
@@ -90,7 +90,7 @@ def On_CameraCapDone( orig_command: Command,
                      captureID: int, 
                      capturedImage: st.CapturedImage):
     # first_pixel = capturedImage.PixelsR[0]
-    # st.OnScreenLogMessage(f"Camera capture done; first red pixel value: " + str(first_pixel), "LTV Behavior", st.Severity.Info)
+    # st.OnScreenLogMessage(f"{en.getName()} Behavior: Camera capture done; first red pixel value: " + str(first_pixel), "LTV Behavior", st.Severity.Info)
 
     payload = st.ParamMap()
     payload.AddParamArray(st.VarType.uint8, "PixelsR", capturedImage.PixelsR)
@@ -111,6 +111,29 @@ def CaptureImage_Received(command: Command):
 
 en_behavior.OnCommandReceived("CaptureImage", CaptureImage_Received)
 
+# PickUpAntenna command handling
+def PickUpAntenna_Received(command: Command):
+    payload: st.ParamMap = command.payload
+    param_list_name = payload.GetParam(st.VarType.string, "ParamListName")
+    result_code = en_behavior.PickUpObject(param_list_name)
+    payload2 = st.ParamMap()
+    payload2.AddParam(st.VarType.int32, "ResultCode", result_code)
+    if result_code == 0:
+        en_behavior.CompleteCommand("PickUpAntenna", payload2)
+    else:
+        en_behavior.FailCommand("PickUpAntenna", payload2)
+en_behavior.OnCommandReceived("PickUpAntenna", PickUpAntenna_Received)
+
+def PlaceDownAntenna_Received(command: Command):
+    result_code = en_behavior.PlaceDownObject()
+    payload = st.ParamMap()
+    payload.AddParam(st.VarType.int32, "ResultCode", result_code)
+    if result_code == 0:
+        en_behavior.CompleteCommand("PlaceDownAntenna", payload)
+    else:
+        en_behavior.FailCommand("PlaceDownAntenna", payload)
+en_behavior.OnCommandReceived("PlaceDownAntenna", PlaceDownAntenna_Received)
+
 #######################
 ##  Simulation Loop  ##
 #######################
@@ -128,7 +151,7 @@ while not exit_flag:
         last_comm_coord: st.PlanetUtils.Coord = mover.GetCurrentCoord()
     else:
         mover.TurnAndMoveToCoord(last_comm_coord)
-        st.OnScreenLogMessage(f"Entity {en.getName()} comm line of sight occluded; Moving back to last point with comm", 
+        st.OnScreenLogMessage(f"{en.getName()} Behavior: Comm line of sight occluded; moving back to last point with comm.", 
                             "LTV Behavior", st.Severity.Info)
 
     rel_vecs, radii, had_comms = ET.GetLidarObstacles(en)

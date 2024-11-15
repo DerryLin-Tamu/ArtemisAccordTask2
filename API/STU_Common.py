@@ -34,6 +34,10 @@ class XY:
     def toLLA(self) -> st.PlanetUtils.LatLonAlt:
         loc = self.originLoc + self.originNWU.north() * self.x + self.originNWU.west() * self.y
         return st.PlanetUtils.PCPF_to_LLA(loc, self.originSM.radius)
+    
+    def __str__(self) -> str:
+        # rounds to nearest cm
+        return f"({round(self.x, 2)}, {round(self.y, 2)})"
 
 
 def CoordToXY(_coord: st.PlanetUtils.Coord) -> XY:
@@ -81,4 +85,15 @@ def Command_CaptureImage(en: st.Entity, exposure: float, task_id: str):
     cmd = Command("CaptureImage", en)
     cmd.payload.AddParam(st.VarType.string, "TaskID", task_id)
     cmd.payload.AddParam(st.VarType.double, "Exposure", exposure)
+    return cmd
+
+def Command_PickUpAntenna(en: st.Entity, task_id: str):
+    cmd = Command("PickUpAntenna", en)
+    cmd.payload.AddParam(st.VarType.string, "TaskID", task_id)
+    cmd.payload.AddParam(st.VarType.string, "ParamListName", "Beacons")
+    return cmd
+
+def Command_PlaceDownAntenna(en: st.Entity, task_id: str):
+    cmd = Command("PlaceDownAntenna", en)
+    cmd.payload.AddParam(st.VarType.string, "TaskID", task_id)
     return cmd

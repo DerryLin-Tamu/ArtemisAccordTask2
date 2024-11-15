@@ -166,3 +166,13 @@ def GetChargingStationXY():
     mover = SM.SurfaceMover(charging_station_en, st.GetSimEntity().GetParam(st.VarType.entityRef, "Planet"))
     current_coord = mover.GetCurrentCoord()
     return CoordToXY(current_coord)
+
+def GetAntennaXY(index: int):
+    '''
+    Returns the XY coordinate of the appropriate antenna.
+    Doesn't require comms.
+    '''
+    antenna_en : st.Entity = st.GetSimEntity().GetParamArray(st.VarType.entityRef, "Beacons")[index]
+    mover = SM.SurfaceMover(antenna_en, st.GetSimEntity().GetParam(st.VarType.entityRef, "Planet"))
+    current_coord = mover.GetCurrentCoord()
+    return CoordToXY(current_coord)
