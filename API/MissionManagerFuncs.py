@@ -72,7 +72,7 @@ class MissionManager:
         # Exhaustive list of all possible commands, even if they are unimplemented
         commandTypes = ["MoveToCoord", 
                         "ReverseToCoord",
-                        "TurnToAzimuth", 
+                        "RotateToAzimuth", 
                         "CameraPan", 
                         "CaptureImage", 
                         "PickUpAntenna",

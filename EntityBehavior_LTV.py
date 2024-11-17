@@ -68,7 +68,8 @@ def RotateToAzimuth_Received(command: Command):
     payload: st.ParamMap = command.payload
     az = payload.GetParam(st.VarType.double, "Azimuth")
     mover.TurnToAzimuth(az)
-    st.OnScreenLogMessage(f"{en.getName()} Behavior: Received TurnToAzimuth command; rotating to azimuth = {az} degrees.", 
+    #NOTE: azimuth param in here is negative due to a flaw in the SurfaceMover code. The external API has been corrected to 
+    st.OnScreenLogMessage(f"{en.getName()} Behavior: Received TurnToAzimuth command; rotating to azimuth = {-az} degrees.", 
                         "LTV Behavior", st.Severity.Info)
     en_behavior.CompleteCommand("RotateToAzimuth", st.ParamMap())
 
