@@ -22,6 +22,8 @@ planet: st.Entity = st.GetThisSystem().GetParam(st.VarType.entityRef, "Planet")
 mover = SM.SurfaceMover(en, planet)
 en_behavior = EB.EntityBehavior(en)
 
+moving_back_to_comm_range = False
+
 ##############################
 ##  Move behaviors for LTV  ##
 ##############################
@@ -34,35 +36,56 @@ def MoveToCoord_Received(command: Command):
     mover.TurnAndMoveToCoord(coord)
     st.OnScreenLogMessage(f"{en.getName()} Behavior: Received MoveToCoord command; moving to XY {CoordToXY(coord)}.", 
                           "LTV Behavior", st.Severity.Info)
-
-
 en_behavior.OnCommandReceived("MoveToCoord", MoveToCoord_Received)
 
-
 def On_MoveComplete(payload : st.ParamMap):
-    command_type = "MoveToCoord"
-    command_id = _commandID_Str(en, command_type)
-    # st.OnScreenLogMessage("DEBUG: Evaluating completion for command id: " + command_id, 
-    #                       "LTV Behavior", st.Severity.Warning)
-    
-    if (command_type in en_behavior.ActiveCommands()):
+    global moving_back_to_comm_range
+    move_command_type = "MoveToCoord"
+    move_command_id = _commandID_Str(en, move_command_type)
+
+    # Handle special case for finishing moving back into comm range.
+    # Fails all active commands.
+    if moving_back_to_comm_range:
+        moving_back_to_comm_range = False
+        st.OnScreenLogMessage(f"{en.getName()} Behavior: Reporting all active commands failed after moving back into comm range", "LTV Behavior", st.Severity.Warning)
+        act_cmd_copy = en_behavior.ActiveCommands().copy()
+        for act_cmd_type in act_cmd_copy:
+            en_behavior.FailCommand(act_cmd_type, payload)
+        return
+
+    if (move_command_type in en_behavior.ActiveCommands()):
         if en.HasParam("HasComms"):
             if en.GetParam(st.VarType.bool, "HasComms"):
-                en_behavior.CompleteCommand(command_type, payload)
+                en_behavior.CompleteCommand(move_command_type, payload)
             else:
-                st.OnScreenLogMessage(f"{en.getName()} Behavior: MoveToCoord failed because of comms loss.", 
+                st.OnScreenLogMessage(f"{en.getName()} Behavior: MoveToCoord can't be reported completed because of comms loss.", 
                                       "LTV Behavior", st.Severity.Info)
-                en_behavior.FailCommand(command_type, payload)
+                # en_behavior.FailCommand(command_type, payload)
         else:
-            en_behavior.CompleteCommand(command_type, payload)
+            en_behavior.CompleteCommand(move_command_type, payload)
     else:
-        st.OnScreenLogMessage(f"{en.getName()} Behavior: MoveToCoord failed because of missing command in active commands.", 
-                              "LTV Behavior", st.Severity.Error)
-        st.logger_warn("Can't complete MoveToCoord because it has already been deleted from active commands.")
+        # NOTE: this case is hit when using Stop command
+        # st.OnScreenLogMessage(f"{en.getName()} Behavior: MoveToCoord failed because of missing command in active commands.", 
+        #                       "LTV Behavior", st.Severity.Error)
+        st.logger_warn("Can't complete MoveToCoord because it has already been deleted from active commands. This could be due to a Stop command.")
         # en_behavior.FailCommand(command_type, payload)
-
-
 mover.OnMoveComplete(On_MoveComplete)
+
+# STOPPING MOVEMENT
+
+def Stop_Received(command: Command):
+    payload: st.ParamMap = command.payload
+    if ("MoveToCoord" in en_behavior.ActiveCommands()):
+        en.SetParam(st.VarType.string, "State", "Loiter")
+        move_fail_payload = st.ParamMap()
+        move_fail_payload.AddParam(st.VarType.string, "Reason", "Stop command received")
+        en_behavior.FailCommand("MoveToCoord", move_fail_payload)
+    st.OnScreenLogMessage(f"{en.getName()} Behavior: Received Stop command; stopping movement.", 
+                          "LTV Behavior", st.Severity.Info)
+    en_behavior.CompleteCommand("Stop", payload)
+en_behavior.OnCommandReceived("Stop", Stop_Received)
+
+# ROTATING TO AZIMUTH
 
 def RotateToAzimuth_Received(command: Command):
     payload: st.ParamMap = command.payload
@@ -144,22 +167,31 @@ DEFAULT_ENTITY_RADIUS_M = 0.3
 
 last_comm_coord: st.PlanetUtils.Coord = mover.GetCurrentCoord()
 
+itr = 0
+
 # Keep the sim running (if this loop exits early for any reason, the sim will end)
 exit_flag = False
 while not exit_flag:
+    itr += 1
     # Default behavior for losing comms is to go back to where we last had comms
     if en.GetParam(st.VarType.bool, "HasComms"):
-        last_comm_coord: st.PlanetUtils.Coord = mover.GetCurrentCoord()
+        if itr % 100 == 0:
+            last_comm_coord: st.PlanetUtils.Coord = mover.GetCurrentCoord()
     else:
-        mover.TurnAndMoveToCoord(last_comm_coord)
-        st.OnScreenLogMessage(f"{en.getName()} Behavior: Comm line of sight occluded; moving back to last point with comm.", 
-                            "LTV Behavior", st.Severity.Info)
+        # Also ensure 50 ticks pass between last comm coord and comm loss reaction
+        if(not moving_back_to_comm_range and itr % 100 == 50):
+            st.OnScreenLogMessage(f"{en.getName()} Behavior: Comm line of sight occluded; moving back to last point with comm.", 
+                            "LTV Behavior", st.Severity.Warning)
+            moving_back_to_comm_range = True
+            mover.TurnAndMoveToCoord(last_comm_coord)
+            # will be cleaned up in On_MoveComplete
 
     rel_vecs, radii, had_comms = ET.GetLidarObstacles(en)
     # st.logger_info("Lidar info: " + str(np.asarray(rel_vecs)) + ", " + str(np.asarray(radii)) + ", " + str(had_comms))
     
     ######################
-    # WIP obstacle hit detection - TBD exact behavior
+    # Obstacle hit detection; you must include this code in your loop!
+    # Use "ObstaclesStopMovement": false on SimEntity in the sim config to disable stopping on obstacles
     ran_into_something_thistime = False
     for i in range(len(rel_vecs)):
         rel_vec = rel_vecs[i]
@@ -169,7 +201,16 @@ while not exit_flag:
         if separation < 0.0:
             ran_into_something_thistime = True
             if not ranIntoSomething:
-                st.OnScreenLogMessage(f"Entity {en.getName()} ran into an obstacle, {distance_away}m away with {obstacle_radius}m radius.", "LTV Behavior", st.Severity.Warning)
+                st.OnScreenLogMessage(f"Entity {en.getName()} ran into an obstacle, {distance_away:.3f}m away with {obstacle_radius:.3f}m radius.", "LTV Behavior", st.Severity.Warning)
+                # Handle stopping the entity
+                if st.GetSimEntity().GetParam(st.VarType.bool, "ObstaclesStopMovement"):
+                    if ("MoveToCoord" in en_behavior.ActiveCommands()):
+                        en.SetParam(st.VarType.string, "State", "Loiter")
+                        move_fail_payload = st.ParamMap()
+                        move_fail_payload.AddParam(st.VarType.string, "Reason", "Hit Obstacle")
+                        en_behavior.FailCommand("MoveToCoord", move_fail_payload)
+
+
                 ranIntoSomething = True
     if not ran_into_something_thistime:
         if ranIntoSomething:

@@ -68,6 +68,15 @@ def Command_MoveToCoord(en: st.Entity, xy: XY, task_id: str):
     cmd.payload.AddParam(st.VarType.doubleV3, "Loc", coord.getLoc())
     return cmd
 
+def Command_Stop(en: st.Entity, task_id: str):
+    '''
+    Stop a movement immediately.
+    '''
+    cmd = Command("Stop", en)
+    cmd.payload.AddParam(st.VarType.entityRef, ["#meta", "Entity"], en)
+    cmd.payload.AddParam(st.VarType.string, "TaskID", task_id)
+    return cmd
+
 def Command_RotateToAzimuth(en: st.Entity, azimuth: float, task_id: str):
     cmd = Command("RotateToAzimuth", en)
     cmd.payload.AddParam(st.VarType.string, "TaskID", task_id)

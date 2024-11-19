@@ -195,6 +195,10 @@ class EntityBehavior:
     
     
     def PickUpObject(self, param_list_name) -> int:
+        if(self.en.getName() != "LTV1"):
+            st.OnScreenLogMessage("Entity " + self.en.getName() + " is not the LTV1 with EVA crew onboard; cannot pick up objects.", 
+                                  "Entity Behavior", st.Severity.Error)
+            return -1
         objects: list[st.Entity] = st.GetSimEntity().GetParamArray(st.VarType.entityRef, param_list_name)
         distances: list[float] = []
         valid_objects: list[int] = []
