@@ -956,7 +956,11 @@
                 "#FromTemplate": {
                     "Source_Path": "SharedData/SCAssets/SpaceVehicles/CrashedLunarLander/CrashedLunarLander.json",
                     "ParamOverrides": {
-                        "Tags": ["array", "string", "Obstacle"],
+                        "Tags": [
+                            "array",
+                            "string",
+                            "Obstacle"
+                        ],
                         "Dynamics": {
                             "ResidentFrame": [
                                 "EntityRef",
