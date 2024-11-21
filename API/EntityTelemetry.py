@@ -14,7 +14,7 @@ def LatLonAltToXY(lla: st.PlanetUtils.LatLonAlt) -> XY:
     return CoordToXY(st.PlanetUtils.Coord(lla, 0.0, radius))
 
 
-def XYToLatLonAlt(en: st.Entity, xy: XY) -> st.PlanetUtils.LatLonAlt:
+def XYToLatLonAlt(xy: XY) -> st.PlanetUtils.LatLonAlt:
     return xy.toLLA()
 
 

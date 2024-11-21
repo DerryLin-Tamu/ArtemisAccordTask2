@@ -183,8 +183,8 @@ mm.OnCommandComplete(LTV1, "Stop", lambda payload : Stop_Complete(payload, LTV1)
 mm.OnCommandComplete(LTV2, "Stop", lambda payload : Stop_Complete(payload, LTV2))
 #TODO could add the rest of the entities here
 
-def Stop_Failed(payload : st.ParamMap):
-    st.OnScreenLogMessage(f"{LTV1.getName()}: Stop command failed.", "MM Surface Movement", st.Severity.Error)
+def Stop_Failed(payload : st.ParamMap, en : st.Entity):
+    st.OnScreenLogMessage(f"{en.getName()}: Stop command failed.", "MM Surface Movement", st.Severity.Error)
     General_TaskFail(payload, en)
 mm.OnCommandFail(LTV1, "Stop", lambda payload : Stop_Failed(payload, LTV1))
 mm.OnCommandFail(LTV2, "Stop", lambda payload : Stop_Failed(payload, LTV2))
