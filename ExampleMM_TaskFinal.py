@@ -133,48 +133,68 @@ mm.OnCommandComplete(Scout1, "MoveToCoord", lambda payload : MoveToCoord_Complet
 mm.OnCommandComplete(Scout2, "MoveToCoord", lambda payload : MoveToCoord_Complete(payload, Scout2))
 #NOTE: could move the rest of the complete/failed reaction funcs to this compacted version
 
-def MoveToCoord_Failed(payload : st.ParamMap, en : st.Entity):
+def MoveToCoord_Failed(payload: st.ParamMap, en: st.Entity):
     if payload.HasParam(st.VarType.string, "Reason"):
         reason = payload.GetParam(st.VarType.string, "Reason")
         st.OnScreenLogMessage(f"{en.getName()}: MoveToCoord command failed. Reason: {reason}", "MM Surface Movement", st.Severity.Warning)
+        
         if reason == "Hit Obstacle":
-            st.OnScreenLogMessage(f"{en.getName()}: Moving away from obstacle now.", "MM Surface Movement", st.Severity.Warning)
-            #Code to handle this, probably by moving away a bit and then moving around the obstacle
+            st.OnScreenLogMessage(f"{en.getName()}: Avoiding obstacle now.", "MM Surface Movement", st.Severity.Warning)
+
+            # Get current position and obstacle details
             currentxy, _ = ET.GetCurrentXY(en)
             rel_vecs, radii, _ = ET.GetLidarObstacles(en)
-            closest_dist = 9999999
+
+            # Find the closest obstacle
+            closest_dist = float('inf')
             closest_idx = -1
             for i in range(len(rel_vecs)):
                 dist = np.linalg.norm(rel_vecs[i]) - radii[i]
-                if(dist < closest_dist):
+                if dist < closest_dist:
                     closest_dist = dist
                     closest_idx = i
             
+            # If no obstacles are found, log a warning and exit
+            if closest_idx == -1:
+                st.OnScreenLogMessage(f"{en.getName()}: No obstacles detected despite failure. Cannot move around.", "MM Surface Movement", st.Severity.Error)
+                General_TaskFail(payload, en)
+                return
+
+            # Calculate the obstacle location and movement offsets
             closest_rel_vec = np.asarray(rel_vecs[closest_idx])
             closest_radius = radii[closest_idx]
-            
-            # Move away from the obstacle
-            currentcoord = currentxy.toCoord()
-            currentLoc = currentcoord.getLoc()
-            # move away 2x radius
-            away_from_obstacle_loc = currentLoc - (closest_radius * 2.0 * closest_rel_vec)/np.linalg.norm(closest_rel_vec)
-            away_from_obstacle_xy = CoordToXY(st.PlanetUtils.Coord(away_from_obstacle_loc, currentcoord.getRot(), currentcoord.getRadius()))
 
-            move_from_obstacle = TG.Task("MoveFromObstacle", Command_MoveToCoord(en, away_from_obstacle_xy, "MoveFromObstacle")) 
-            entity_to_task_graph[en].add_task(move_from_obstacle, [])
-            # Continue with search?
-    else:
-        st.OnScreenLogMessage(f"{en.getName()}: MoveToCoord command failed.", "MM Surface Movement", st.Severity.Error)
+            # Move left (perpendicular to the obstacle's vector)
+            move_left_offset = np.array([-closest_rel_vec[1], closest_rel_vec[0]])  # Rotate vector 90° counterclockwise
+            move_left_offset = (move_left_offset / np.linalg.norm(move_left_offset)) * (closest_radius * 2.0)
+            move_left_xy = CoordToXY(currentxy + move_left_offset)
+
+            # Move forward to bypass the obstacle
+            bypass_offset = (closest_rel_vec / np.linalg.norm(closest_rel_vec)) * (closest_radius * 2.0 + 1.0)
+            bypass_xy = CoordToXY(move_left_xy + bypass_offset)
+
+            # Tasks for avoiding the obstacle
+            move_left_task = TG.Task("MoveLeft", Command_MoveToCoord(en, move_left_xy, "MoveLeft"))
+            bypass_obstacle_task = TG.Task("BypassObstacle", Command_MoveToCoord(en, bypass_xy, "BypassObstacle"))
+
+            # Continue the interrupted task
+            previous_task = entity_to_task_graph[en].get_current_task()
+
+            # Add tasks to the task graph
+            entity_to_task_graph[en].add_task(move_left_task, [])
+            entity_to_task_graph[en].add_task(bypass_obstacle_task, [move_left_task])
+            entity_to_task_graph[en].add_task(previous_task, [bypass_obstacle_task])
+        
+        else:
+            st.OnScreenLogMessage(f"{en.getName()}: MoveToCoord command failed with unknown reason.", "MM Surface Movement", st.Severity.Error)
+
+    # Handle general failure logic
     General_TaskFail(payload, en)
-    # Example of handling move failure by clearing all tasks, then letting the loop pick up where we left off
-    # LTV1_task_graph.clear_all() #wipe existing tasks
-mm.OnCommandFail(LTV1, "MoveToCoord", lambda payload : MoveToCoord_Failed(payload, LTV1))
-mm.OnCommandFail(LTV2, "MoveToCoord", lambda payload : MoveToCoord_Failed(payload, LTV2))
-mm.OnCommandFail(Scout1, "MoveToCoord", lambda payload : MoveToCoord_Failed(payload, Scout1))
-mm.OnCommandFail(Scout2, "MoveToCoord", lambda payload : MoveToCoord_Failed(payload, Scout2))
-#NOTE: could move the rest of the complete/failed reaction funcs to this compacted version
 
-# STOPPING
+# Compacted failure handler for multiple entities
+for rover in [LTV1, LTV2, Scout1, Scout2]:
+    mm.OnCommandFail(rover, "MoveToCoord", lambda payload: MoveToCoord_Failed(payload, rover))
+
 
 def Stop_Complete(payload : st.ParamMap, en : st.Entity):
     st.OnScreenLogMessage(f"{en.getName()}: Stop command complete.", "MM Surface Movement", st.Severity.Info)
@@ -329,7 +349,7 @@ LTV1_task_graph.add_task(rotate_1, ["Move3"])
 
 # Pick up an antenna, drive away with it, then place it down
 antenna1_initialLoc = ET.GetAntennaXY(1)
-NewAntennaPlacement = XY(antenna1_initialLoc.x + 100, antenna1_initialLoc.y + 20)
+NewAntennaPlacement = XY(454.78, 39.50)
 waypoint_ltv1_2 = XY(antenna1_initialLoc.x + 300, antenna1_initialLoc.y + 10)
 
 LTV1_move_to_antenna = TG.Task("MoveToAntenna", Command_MoveToCoord(LTV1, antenna1_initialLoc, "MoveToAntenna"))
