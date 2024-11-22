@@ -7,13 +7,13 @@
     "Description": ""
   },
   "IncludeSims": [
-    "Local/Repos/STU_Competition2/sims/STU_BaseSimFinal.json"
+    "Local/Repos/ArtemisAccordTask2/sims/STU_BaseSimFinal.json"
   ],
   "SystemManager": {
     "Systems": [
       {
         "Nametag": "MissionManager",
-        "Source": "Local/Repos/STU_Competition2/ExampleMM_TaskFinal.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/ExampleMM_TaskFinal.py",
         "NOTE": "YOU CAN REPLACE Source WITH ANOTHER MISSION MANAGER PYTHON SYSTEM",
         "Type": "Python",
         "Active": true,
@@ -27,7 +27,7 @@
       },
       {
         "Nametag": "EntityBehavior_LTV1",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -38,7 +38,7 @@
       },
       {
         "Nametag": "EntityBehavior_LTV2",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -49,7 +49,7 @@
       },
       {
         "Nametag": "EntityBehavior_Scout1",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -60,7 +60,7 @@
       },
       {
         "Nametag": "EntityBehavior_Scout2",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -71,7 +71,7 @@
       },
       {
         "Nametag": "EntityBehavior_TruckRover",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -82,7 +82,7 @@
       },
       {
         "Nametag": "EntityBehavior_ExcavatorRover",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -93,7 +93,7 @@
       },
       {
         "Nametag": "EntityBehavior_SamplingRover",
-        "Source": "Local/Repos/STU_Competition2/EntityBehavior_LTV.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/EntityBehavior_LTV.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -104,7 +104,7 @@
       },
       {
         "Nametag": "CompetitionBackend",
-        "Source": "Local/Repos/STU_Competition2/CompetitionBackend_FinalTask.py",
+        "Source": "Local/Repos/ArtemisAccordTask2/CompetitionBackend_FinalTask.py",
         "Type": "Python",
         "Active": true,
         "Inst_Parameters": {
@@ -237,11 +237,11 @@
         "Location_LTV2": [ "doubleV3", -12773.0, -12558.0, -1739221.0 ],
         "Location_EVA1": [ "doubleV3", -12825.0, -12611.0, -1739203.0 ],
         "Location_EVA2": [ "doubleV3", -12827.0, -12613.0, -1739203.0 ],
-        "Location_STU_Competition2_ProcessingFacility": [ "doubleV3", -12788.87, -14457.72, -1738831.4 ],
-        "Location_STU_Competition2_ChargingStation": [ "doubleV3", -12911.0, -12507.0, -1739182.0 ],
-        "Location_STU_Competition2_Beacon1": [ "doubleV3", -13082.0, -12813.0, -1739119.0 ],
-        "Location_STU_Competition2_ShadedRidge": [ "doubleV3", -14122.0, -13036.0, -1738942.0 ],
-        "Location_STU_Competition2_EdgeOfShadow": [ "doubleV3", -13093.0, -13190.0, -1739061.0 ]
+        "Location_ArtemisAccordTask2_ProcessingFacility": [ "doubleV3", -12788.87, -14457.72, -1738831.4 ],
+        "Location_ArtemisAccordTask2_ChargingStation": [ "doubleV3", -12911.0, -12507.0, -1739182.0 ],
+        "Location_ArtemisAccordTask2_Beacon1": [ "doubleV3", -13082.0, -12813.0, -1739119.0 ],
+        "Location_ArtemisAccordTask2_ShadedRidge": [ "doubleV3", -14122.0, -13036.0, -1738942.0 ],
+        "Location_ArtemisAccordTask2_EdgeOfShadow": [ "doubleV3", -13093.0, -13190.0, -1739061.0 ]
       }
     },
     "entities": [
