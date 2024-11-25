@@ -134,7 +134,7 @@ mm.OnCommandComplete(Scout2, "MoveToCoord", lambda payload : MoveToCoord_Complet
 #NOTE: could move the rest of the complete/failed reaction funcs to this compacted version
 
 def MoveToCoord_Failed(payload: st.ParamMap, en: st.Entity):
-    st.OnScreenLogMessage(f"{en.getName()}: Entered MoveToCoord_Failed handler.", "Debug", st.Severity.Debug)
+    # st.OnScreenLogMessage(f"{en.getName()}: Entered MoveToCoord_Failed handler.", "Debug", st.Severity.Debug)
 
     if payload.HasParam(st.VarType.string, "Reason"):
         reason = payload.GetParam(st.VarType.string, "Reason")
