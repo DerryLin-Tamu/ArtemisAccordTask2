@@ -26,6 +26,11 @@ import TaskGraph as TG
 
 # Get all entities participating in the search
 entities = st.GetThisSystem().GetParamArray(st.VarType.entityRef, "Entities")
+
+# Debugging. Log initialized entities
+for entity in entities:
+    st.OnScreenLogMessage(f"Entity initialized: {entity.GetName()}", "Initialization", st.Severity.Info)
+    
 LTV1: st.Entity = entities[0]
 LTV2: st.Entity = entities[1]
 
@@ -52,14 +57,25 @@ def LTV1_TaskFail(payload : st.ParamMap):
 ##############################
 
 def MoveToCoord_LTV1_Complete(payload : st.ParamMap):
-    st.OnScreenLogMessage("MoveToCoord command complete.", "Surface Movement", st.Severity.Info)
+    # st.OnScreenLogMessage("MoveToCoord command complete.", "Surface Movement", st.Severity.Info)
+    entity_name = payload.GetParam(st.VarType.string, "EntityName")
+    st.OnScreenLogMessage(f"MoveToCoord command complete for entity: {entity_name}", "Surface Movement", st.Severity.Info)
+    if entity_name != "LTV1":
+        st.OnScreenLogMessage(f"Unexpected entity name in completion callback: {entity_name}", "Debug", st.Severity.Error)
     LTV1_TaskComplete(payload)
 mm.OnCommandComplete(LTV1, "MoveToCoord", MoveToCoord_LTV1_Complete)
 
 def MoveToCoord_LTV1_Failed(payload : st.ParamMap):
-    st.OnScreenLogMessage("MoveToCoord command failed.", "Surface Movement", st.Severity.Info)
+    # st.OnScreenLogMessage("MoveToCoord command failed.", "Surface Movement", st.Severity.Info)
+    entity_name = payload.GetParam(st.VarType.string, "EntityName")
+    st.OnScreenLogMessage(f"MoveToCoord command failed for entity: {entity_name}", "Surface Movement", st.Severity.Info)
+    if entity_name != "LTV1":
+        st.OnScreenLogMessage(f"Unexpected entity name in failure callback: {entity_name}", "Debug", st.Severity.Error)
     LTV1_TaskFail(payload)
 mm.OnCommandFail(LTV1, "MoveToCoord", MoveToCoord_LTV1_Failed)
+
+# Debugging log callback registration
+st.OnScreenLogMessage(f"Callbacks registered for LTV1: MoveToCoord", "Debug", st.Severity.Info)
 
 ################################
 ##  Mission Manager Commands  ##
@@ -87,6 +103,11 @@ LTV1_task_graph.add_task(move_2, ["Move1"])
 
 move_3 = TG.Task("Move3", Command_MoveToCoord(LTV1, waypoint_3, "Move3"))
 LTV1_task_graph.add_task(move_3, ["Move2"])
+
+# Debugging log tasks in the graph
+for task_id in LTV1_task_graph.pending_tasks:
+    task = LTV1_task_graph.get_task(task_id)
+    st.OnScreenLogMessage(f"Task {task_id} command entity: {task.command.entity.GetName()}", "TaskGraph", st.Severity.Info)
 
 #################################
 ##  Simulation Initialization  ##
