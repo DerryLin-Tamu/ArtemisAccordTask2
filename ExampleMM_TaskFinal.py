@@ -134,6 +134,8 @@ mm.OnCommandComplete(Scout2, "MoveToCoord", lambda payload : MoveToCoord_Complet
 #NOTE: could move the rest of the complete/failed reaction funcs to this compacted version
 
 def MoveToCoord_Failed(payload: st.ParamMap, en: st.Entity):
+    st.OnScreenLogMessage(f"{en.getName()}: Entered MoveToCoord_Failed handler.", "Debug", st.Severity.Debug)
+
     if payload.HasParam(st.VarType.string, "Reason"):
         reason = payload.GetParam(st.VarType.string, "Reason")
         st.OnScreenLogMessage(f"{en.getName()}: MoveToCoord command failed. Reason: {reason}", "MM Surface Movement", st.Severity.Warning)
@@ -168,6 +170,10 @@ def MoveToCoord_Failed(payload: st.ParamMap, en: st.Entity):
             move_left_offset = np.array([-closest_rel_vec[1], closest_rel_vec[0]])  # Rotate vector 90° counterclockwise
             move_left_offset = (move_left_offset / np.linalg.norm(move_left_offset)) * (closest_radius * 2.0)
             move_left_xy = CoordToXY(currentxy + move_left_offset)
+            
+            # Debug log for `move_left_offset`
+            st.OnScreenLogMessage(f"{en.getName()}: Calculated move left offset: {move_left_offset}, Move left XY: {move_left_xy}", "Debug", st.Severity.Debug)
+
 
             # Move forward to bypass the obstacle
             bypass_offset = (closest_rel_vec / np.linalg.norm(closest_rel_vec)) * (closest_radius * 2.0 + 1.0)
@@ -349,7 +355,7 @@ LTV1_task_graph.add_task(rotate_1, ["Move3"])
 
 # Pick up an antenna, drive away with it, then place it down
 antenna1_initialLoc = ET.GetAntennaXY(1)
-NewAntennaPlacement = XY(454.78, 39.50)
+NewAntennaPlacement = XY(444.78, 15.50)
 waypoint_ltv1_2 = XY(antenna1_initialLoc.x + 300, antenna1_initialLoc.y + 10)
 
 LTV1_move_to_antenna = TG.Task("MoveToAntenna", Command_MoveToCoord(LTV1, antenna1_initialLoc, "MoveToAntenna"))
