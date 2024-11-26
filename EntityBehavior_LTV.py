@@ -205,7 +205,6 @@ while not exit_flag:
                 # Handle stopping the entity
                 if st.GetSimEntity().GetParam(st.VarType.bool, "ObstaclesStopMovement"):
                     if ("MoveToCoord" in en_behavior.ActiveCommands()):
-                        st.OnScreenLogMessage(f"Entity name: {en.GetName()}")
                         en.SetParam(st.VarType.string, "State", "Loiter")
                         move_fail_payload = st.ParamMap()
                         move_fail_payload.AddParam(st.VarType.string, "Reason", "Hit Obstacle")
