@@ -21,6 +21,8 @@ import API.EntityTelemetry as ET
 import TaskGraph as TG
 import cv2 # for camera pixel work
 
+from algorithm import generate_spiral_waypoints
+
 #############################
 ##  Mission Manager Setup  ##
 #############################
@@ -316,15 +318,15 @@ mm.OnCommandFail(LTV1, "PlaceDownAntenna", PlaceDownAntenna_LTV1_Failed)
 ################################
 
 # Get initial xy for LTV1 (assume has comms initially)
-xy_LTV1, had_comms = ET.GetCurrentXY(LTV1)
+# xy_LTV1, had_comms = ET.GetCurrentXY(LTV1)
 
-waypoint_1 = XY(xy_LTV1.x + 20, xy_LTV1.y)
+# waypoint_1 = XY(xy_LTV1.x + 20, xy_LTV1.y)
 
-if(xy_LTV1.x < 0):
-    waypoint_1 = XY(xy_LTV1.x - 20, xy_LTV1.y)
+# if(xy_LTV1.x < 0):
+#     waypoint_1 = XY(xy_LTV1.x - 20, xy_LTV1.y)
 
-waypoint_2 = XY(xy_LTV1.x + 20, xy_LTV1.y + 30)
-waypoint_3 = XY(xy_LTV1.x + 20, xy_LTV1.y + 40)
+# waypoint_2 = XY(xy_LTV1.x + 20, xy_LTV1.y + 30)
+# waypoint_3 = XY(xy_LTV1.x + 20, xy_LTV1.y + 40)
 
 # task = Task(name, Command(entity, xy coord, name))
 # taskgraph << task, dependencies (as a list of names, or blank list)
@@ -346,11 +348,11 @@ exposure = 15.0
 # LTV1_task_graph.add_task(img_cap3, ["Capture2"])
 
 # More moves
-move_3 = TG.Task("Move3", Command_MoveToCoord(LTV1, waypoint_3, "Move3"))
-LTV1_task_graph.add_task(move_3, ["Move2"])
+# move_3 = TG.Task("Move3", Command_MoveToCoord(LTV1, waypoint_3, "Move3"))
+# LTV1_task_graph.add_task(move_3, ["Move2"])
 
-rotate_1 = TG.Task("Rotate_1", Command_RotateToAzimuth(LTV1, 0, "Rotate_1"))
-LTV1_task_graph.add_task(rotate_1, ["Move3"])
+# rotate_1 = TG.Task("Rotate_1", Command_RotateToAzimuth(LTV1, 0, "Rotate_1"))
+# LTV1_task_graph.add_task(rotate_1, ["Move3"])
 
 
 # Pick up an antenna, drive away with it, then place it down
@@ -358,49 +360,61 @@ antenna1_initialLoc = ET.GetAntennaXY(1)
 NewAntennaPlacement = XY(444.78, 15.50)
 waypoint_ltv1_2 = XY(antenna1_initialLoc.x + 300, antenna1_initialLoc.y + 10)
 
-LTV1_move_to_antenna = TG.Task("MoveToAntenna", Command_MoveToCoord(LTV1, antenna1_initialLoc, "MoveToAntenna"))
-LTV1_get_antenna = TG.Task("PickUpAntenna", Command_PickUpAntenna(LTV1, "PickUpAntenna"))
-LTV1_move1 = TG.Task("Move1", Command_MoveToCoord(LTV1, NewAntennaPlacement, "Move1"))
-LTV1_place_antenna = TG.Task("PlaceDownAntenna", Command_PlaceDownAntenna(LTV1, "PlaceDownAntenna"))
-LTV1_move2 = TG.Task("Move2", Command_MoveToCoord(LTV1, waypoint_ltv1_2, "Move2"))
+# LTV1_move_to_antenna = TG.Task("MoveToAntenna", Command_MoveToCoord(LTV1, antenna1_initialLoc, "MoveToAntenna"))
+# LTV1_get_antenna = TG.Task("PickUpAntenna", Command_PickUpAntenna(LTV1, "PickUpAntenna"))
+# LTV1_move1 = TG.Task("Move1", Command_MoveToCoord(LTV1, NewAntennaPlacement, "Move1"))
+# LTV1_place_antenna = TG.Task("PlaceDownAntenna", Command_PlaceDownAntenna(LTV1, "PlaceDownAntenna"))
+# LTV1_move2 = TG.Task("Move2", Command_MoveToCoord(LTV1, waypoint_ltv1_2, "Move2"))
 
-LTV1_task_graph.add_task(LTV1_move_to_antenna, [])
-LTV1_task_graph.add_task(LTV1_get_antenna, ["MoveToAntenna"])
-LTV1_task_graph.add_task(LTV1_move1, ["PickUpAntenna"])
-LTV1_task_graph.add_task(LTV1_place_antenna, ["Move1"])
-LTV1_task_graph.add_task(LTV1_move2, ["PlaceDownAntenna"])
+# LTV1_task_graph.add_task(LTV1_move_to_antenna, [])
+# LTV1_task_graph.add_task(LTV1_get_antenna, ["MoveToAntenna"])
+# LTV1_task_graph.add_task(LTV1_move1, ["PickUpAntenna"])
+# LTV1_task_graph.add_task(LTV1_place_antenna, ["Move1"])
+# LTV1_task_graph.add_task(LTV1_move2, ["PlaceDownAntenna"])
 
 
 # Demonstrate stopping
-LTV2_move_1 = TG.Task("Move1", Command_MoveToCoord(LTV2, waypoint_1, "Move1"))
-LTV2_stop1 = TG.Task("Stop1", Command_Stop(LTV2, "Stop1"))
-LTV2_move_2 = TG.Task("Move2", Command_MoveToCoord(LTV2, waypoint_2, "Move2"))
+# LTV2_move_1 = TG.Task("Move1", Command_MoveToCoord(LTV2, waypoint_1, "Move1"))
+# LTV2_stop1 = TG.Task("Stop1", Command_Stop(LTV2, "Stop1"))
+# LTV2_move_2 = TG.Task("Move2", Command_MoveToCoord(LTV2, waypoint_2, "Move2"))
 
-LTV2_task_graph.add_task(LTV2_move_1, [])
-LTV2_task_graph.add_task(CreateTimerTask("TimeBeforeStop", 5.0), [])
-LTV2_task_graph.add_task(LTV2_stop1, ["TimeBeforeStop"])
+# LTV2_task_graph.add_task(LTV2_move_1, [])
+# LTV2_task_graph.add_task(CreateTimerTask("TimeBeforeStop", 5.0), [])
+# LTV2_task_graph.add_task(LTV2_stop1, ["TimeBeforeStop"])
 # LTV2_task_graph.add_task(LTV2_move_2, ["Stop1"])
 
 # Move scout rovers to waypoints
-waypoint_far = XY(antenna1_initialLoc.x + 20000, antenna1_initialLoc.y + 40)
-Scout1_move1 = TG.Task("Move1", Command_MoveToCoord(Scout1, waypoint_1, "Move1"))
-Scout1_move1 = TG.Task("MoveFar", Command_MoveToCoord(Scout1, waypoint_far, "MoveFar"))
-Scout1_task_graph.add_task(Scout1_move1, [])
-Scout1_task_graph.add_task(Scout1_move1, ["Move1"])
+waypoints = generate_spiral_waypoints([-317.15137746, 735.68912359], [193.93800481, 781.16755206], [211.28327371, 301.49656534],[-266.14071937, 335.44104047])
+prevtask_id = None
+exposure = 8.0
+for i, waypoint in enumerate(waypoints):
+    wp = XY(*waypoint)
+    movetask_id = f"Move{i}"
+    move = TG.Task(movetask_id, Command_MoveToCoord(Scout1, wp, movetask_id))
+    dependencies = []
+    if prevtask_id is not None:
+        dependencies.append(prevtask_id)
+    Scout1_task_graph.add_task(move, dependencies)
+    prevtask_id = movetask_id
+# waypoint_far = XY(antenna1_initialLoc.x + 20000, antenna1_initialLoc.y + 40)
+# Scout1_move1 = TG.Task("Move1", Command_MoveToCoord(Scout1, waypoint_1, "Move1"))
+# Scout1_move1 = TG.Task("MoveFar", Command_MoveToCoord(Scout1, waypoint_far, "MoveFar"))
+# Scout1_task_graph.add_task(Scout1_move1, [])
+# Scout1_task_graph.add_task(Scout1_move1, ["Move1"])
 
-Scout2_move1 = TG.Task("Move1", Command_MoveToCoord(Scout2, waypoint_2, "Move1"))
-Scout2_task_graph.add_task(Scout2_move1, [])
+# Scout2_move1 = TG.Task("Move1", Command_MoveToCoord(Scout2, waypoint_2, "Move1"))
+# Scout2_task_graph.add_task(Scout2_move1, [])
 
 # Drive truck to charging station, charge, then drive away
-waypoint_charge = ET.GetChargingStationXY()
-waypoint_truck = XY(waypoint_charge.x + 50, waypoint_charge.y + 20)
+# waypoint_charge = ET.GetChargingStationXY()
+# waypoint_truck = XY(waypoint_charge.x + 50, waypoint_charge.y + 20)
 
-TruckRover_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(TruckRover, waypoint_charge, "MoveCharge"))
-TruckRover_move1 = TG.Task("Move1", Command_MoveToCoord(TruckRover, waypoint_truck, "Move1"))
+# TruckRover_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(TruckRover, waypoint_charge, "MoveCharge"))
+# TruckRover_move1 = TG.Task("Move1", Command_MoveToCoord(TruckRover, waypoint_truck, "Move1"))
 
-TruckRover_task_graph.add_task(TruckRover_move_charge, [])
-TruckRover_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 15.0), ["MoveCharge"])
-TruckRover_task_graph.add_task(TruckRover_move1, ["WaitWhileCharging"])
+# TruckRover_task_graph.add_task(TruckRover_move_charge, [])
+# TruckRover_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 15.0), ["MoveCharge"])
+# TruckRover_task_graph.add_task(TruckRover_move1, ["WaitWhileCharging"])
 
 
 #################################
