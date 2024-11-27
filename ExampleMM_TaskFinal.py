@@ -405,16 +405,72 @@ for i, waypoint in enumerate(waypoints):
 # Scout2_move1 = TG.Task("Move1", Command_MoveToCoord(Scout2, waypoint_2, "Move1"))
 # Scout2_task_graph.add_task(Scout2_move1, [])
 
-# Drive truck to charging station, charge, then drive away
+#################################
+## Initial Charging  ############
+#################################
+
+# # Drive truck to charging station, charge, then drive away
 # waypoint_charge = ET.GetChargingStationXY()
 # waypoint_truck = XY(waypoint_charge.x + 50, waypoint_charge.y + 20)
 
+# # CHARGING FOR TRUCK
 # TruckRover_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(TruckRover, waypoint_charge, "MoveCharge"))
 # TruckRover_move1 = TG.Task("Move1", Command_MoveToCoord(TruckRover, waypoint_truck, "Move1"))
 
 # TruckRover_task_graph.add_task(TruckRover_move_charge, [])
-# TruckRover_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 15.0), ["MoveCharge"])
+# TruckRover_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 20.0), ["MoveCharge"])
 # TruckRover_task_graph.add_task(TruckRover_move1, ["WaitWhileCharging"])
+
+# # CHARGING FOR LTV2
+# waypoint_LTV2 = XY(waypoint_charge.x + 60, waypoint_charge.y + 20)
+
+# LTV2_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(LTV2, waypoint_charge, "MoveCharge"))
+# LTV2_move1 = TG.Task("Move1", Command_MoveToCoord(LTV2, waypoint_LTV2, "Move1"))
+
+# LTV2_task_graph.add_task(LTV2_move_charge, [])
+# LTV2_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 3.5), ["MoveCharge"])
+# LTV2_task_graph.add_task(LTV2_move1, ["WaitWhileCharging"])
+
+# # CHARGING FOR SCOUTROVER 1
+# waypoint_Scout1 = XY(waypoint_charge.x + 70, waypoint_charge.y + 20)
+
+# Scout1_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(Scout1, waypoint_charge, "MoveCharge"))
+# Scout1_move1 = TG.Task("Move1", Command_MoveToCoord(Scout1, waypoint_Scout1, "Move1"))
+
+# Scout1_task_graph.add_task(Scout1_move_charge, [])
+# Scout1_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 2), ["MoveCharge"])
+# Scout1_task_graph.add_task(Scout1_move1, ["WaitWhileCharging"])
+
+
+# # CHARGING FOR SCOUTROVER 2
+# waypoint_Scout2 = XY(waypoint_charge.x + 80, waypoint_charge.y + 20)
+
+# Scout2_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(Scout2, waypoint_charge, "MoveCharge"))
+# Scout2_move1 = TG.Task("Move1", Command_MoveToCoord(Scout2, waypoint_Scout2, "Move1"))
+
+# Scout2_task_graph.add_task(Scout2_move_charge, [])
+# Scout2_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 2), ["MoveCharge"])
+# Scout2_task_graph.add_task(Scout2_move1, ["WaitWhileCharging"])
+
+# # CHARGING FOR EXCAVATOR
+# waypoint_ExcavatorRover = XY(waypoint_charge.x + 90, waypoint_charge.y + 20)
+
+# ExcavatorRover_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(ExcavatorRover, waypoint_charge, "MoveCharge"))
+# ExcavatorRover_move1 = TG.Task("Move1", Command_MoveToCoord(ExcavatorRover, waypoint_ExcavatorRover, "Move1"))
+
+# ExcavatorRover_task_graph.add_task(ExcavatorRover_move_charge, [])
+# ExcavatorRover_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 20), ["MoveCharge"])
+# ExcavatorRover_task_graph.add_task(ExcavatorRover_move1, ["WaitWhileCharging"])
+
+# # CHARGING FOR SAMPLING 
+# waypoint_SamplingRover = XY(waypoint_charge.x + 100, waypoint_charge.y + 20)
+
+# SamplingRover_move_charge = TG.Task("MoveCharge", Command_MoveToCoord(SamplingRover, waypoint_charge, "MoveCharge"))
+# SamplingRover_move1 = TG.Task("Move1", Command_MoveToCoord(SamplingRover, waypoint_SamplingRover, "Move1"))
+
+# SamplingRover_task_graph.add_task(SamplingRover_move_charge, [])
+# SamplingRover_task_graph.add_task(CreateTimerTask("WaitWhileCharging", 10), ["MoveCharge"])
+# SamplingRover_task_graph.add_task(SamplingRover_move1, ["WaitWhileCharging"])
 
 
 #################################
